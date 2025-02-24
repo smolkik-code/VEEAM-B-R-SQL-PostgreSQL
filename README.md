@@ -1,6 +1,6 @@
 # VEEAM-B-R-SQL-PostgreSQL
 
-Many thanks for the script and template to the user: https://github.com/romainsi. The code has been rewritten to connect to the PostgreSQL database. 
+Many thanks for the script and template to the user: https://github.com/romainsi. The code (https://github.com/romainsi/zabbix-VB-R-SQL) has been rewritten to connect to the PostgreSQL database. 
 
 This template use SQL Query to discover VEEAM Backup jobs, Veeam BackupCopy, Veeam BackupSync, Veeam Tape Job, Veeam FileTape, Veeam Agent, Veeam Replication, All Repositories.
 Powershell get all informations via SQL and send it to zabbix server/proxy with json.
