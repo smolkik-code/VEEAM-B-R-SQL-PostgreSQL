@@ -11,23 +11,22 @@ zabbix_export:
       template: 'Veeam Backup And Replication'
       name: 'Veeam Backup And Replication'
       description: |
-        Version: 2.8
+        Version: 2.9
         Monitor Veeam Backup and Replication job and repository information
         It uses SQL queries to the Veeam database to obtain the information
         To use the template:
-        1. Install the Zabbix agent or Zabbix agent 2 on your host.
-        2. Connect to the veeam sql server, adjust protocols for VEEAMSQL in "Sql Server Configuration Manager" to permit connection using TCP/IP
-        3. Create User/Pass with reader rights, permit to connect with local user in sql settings and specify the default database, using SQL Server Management Studio.
-           Alternatively you can use the following sql commands, using sqlcmd.exe:
-        `USE [VeeamBackup]`  
-        `CREATE LOGIN [zabbixveeam] WITH PASSWORD = N'CHANGEME', CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF;`  
-        `CREATE USER [zabbixveeam] FOR LOGIN [zabbixveeam];`  
-        `EXEC sp_addrolemember 'db_datareader', 'zabbixveeam';`  
-        `GO`  
-        4. In script, ajust variables on lines 73-78 to match your configuration
-        5. Copy `zabbix_vbr_job.ps1` in the directory : `C:\Program Files\Zabbix Agent 2\scripts\` (create folder if not exist)
-        6. Add `UserParameter=veeam.info[*],powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Program Files\Zabbix Agent 2\scripts\zabbix_vbr_job.ps1" "$1"` in zabbix_agent2.conf  
-        7. Associate the template to the host with Veeam Backup and Replication installed
+        1. Install the Zabbix agent 2 on your host.
+        2. Register access for the zabbixveeam user in the pg_hba.conf file:
+        # "local" is for Unix domain socket connections only
+        local   all             zabbixveeam                             md5
+        # IPv4 local connections:
+        host    all             zabbixveeam     127.0.0.1/32            md5
+        host    all             all             127.0.0.1/32            sspi map=veeam
+        3. With psql : Create User/Pass with reader rights , permit to connect with local user in sql settings and specify the default database. With psql.exe (Change password "CHANGEME" with something more secure):
+        CREATE ROLE zabbixveeam WITH LOGIN PASSWORD 'CHANGEME'; GRANT CONNECT ON DATABASE VeeamBackup TO zabbixveeam; GRANT USAGE ON SCHEMA public TO zabbixveeam; GRANT SELECT ON ALL TABLES IN SCHEMA public TO zabbixveeam; ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO zabbixveeam; 
+        4. Copy `zabbix_vbr_job.ps1` in the directory : `C:\Program Files\Zabbix Agent 2\scripts\` (create folder if not exist)
+        5. Add `UserParameter=veeam.info[*],powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Program Files\Zabbix Agent 2\scripts\zabbix_vbr_job.ps1" "$1"` in zabbix_agent2.conf  
+        6. Associate the template to the host with Veeam Backup and Replication installed
         
         Created by:
         Romainsi https://github.com/romainsi
@@ -622,3 +621,10 @@ zabbix_export:
             -
               value: '12003'
               newvalue: AgentBackupJob
+            -
+              value: '13000'
+              newvalue: NAS
+            -
+              value: '14000'
+              newvalue: Proxmox
+              
