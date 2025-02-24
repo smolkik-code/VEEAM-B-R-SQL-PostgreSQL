@@ -54,37 +54,24 @@ Powershell get all informations via SQL and send it to zabbix server/proxy with 
 
 1. Install the Zabbix agent 2 on your host.
 2. Register access for the zabbixveeam user in the pg_hba.conf file:
-    # TYPE  DATABASE        USER            ADDRESS                 METHOD
-
+```bash
 # "local" is for Unix domain socket connections only
 local   all             zabbixveeam                             md5
 
 # IPv4 local connections:
 host    all             zabbixveeam     127.0.0.1/32            md5
 host    all             all             127.0.0.1/32            sspi map=veeam
-
+```
 3. With psql : Create User/Pass with reader rights , permit to connect with local user in sql settings and specify the default database. With psql.exe (Change password "CHANGEME" with something more secure):
 
     ```sql
-    -- Переключение на базу данных VeeamBackup
-\c VeeamBackup;
-
--- Создание пользователя (роли) с паролем
-CREATE ROLE zabbixveeam WITH LOGIN PASSWORD 'CHANGEME';
-
--- Назначение прав на чтение всех таблиц в базе данных
-GRANT CONNECT ON DATABASE VeeamBackup TO zabbixveeam;
-GRANT USAGE ON SCHEMA public TO zabbixveeam;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO zabbixveeam;
-
--- Если вы хотите, чтобы эти права автоматически применялись к новым таблицам
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO zabbixveeam;
+   CREATE ROLE zabbixveeam WITH LOGIN PASSWORD 'CHANGEME'; GRANT CONNECT ON DATABASE VeeamBackup TO zabbixveeam; GRANT USAGE ON SCHEMA public TO zabbixveeam; GRANT SELECT ON ALL TABLES IN SCHEMA public TO zabbixveeam; ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO zabbixveeam;
     ```
 
-4. Copy `zabbix_vbr_job.ps1` in the directory : `C:\Program Files\Zabbix Agent 2\scripts\` (create folder if not exist)
-5. Add `UserParameter=veeam.info[*],powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Program Files\Zabbix Agent 2\scripts\zabbix_vbr_job.ps1" "$1"` in zabbix_agent2.conf  
-6. Import Template_Veeam_Backup_And_Replication.yaml file into Zabbix.
-7. Associate Template "VEEAM Backup and Replication" to the host.  
+5. Copy `zabbix_vbr_job.ps1` in the directory : `C:\Program Files\Zabbix Agent 2\scripts\` (create folder if not exist)
+6. Add `UserParameter=veeam.info[*],powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Program Files\Zabbix Agent 2\scripts\zabbix_vbr_job.ps1" "$1"` in zabbix_agent2.conf  
+7. Import Template_Veeam_Backup_And_Replication.yaml file into Zabbix.
+8. Associate Template "VEEAM Backup and Replication" to the host.  
 NOTE: When importing the new template version on an existing installation please check all "Delete missing", except "Template linkage", to make sure the old items are deleted
 
 Ajust Zabbix Agent & Server/Proxy timeout for userparameter, you can use this powershell command to determine the execution time :
